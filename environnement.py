@@ -19,6 +19,9 @@ class Environnement:
     listePosAgent = []
     liste_cluster = []
     liste_nb_ite = []
+    liste_collaboration = []
+    liste_robot_attente =[]
+    liste_pheromone = np.zeros((taille,taille))
     accept = False
     index_agent_aide = -1
 
@@ -116,237 +119,60 @@ class Environnement:
             # on choisit l'agent auquel on donne la parole
             choix = random.randint(0, 19)
             agent = self.listeAgent[choix]
-            i = self.listePosAgent[choix][0]
-            j = self.listePosAgent[choix][1]
-            i_au = self.listePosAgent[choix][0]
-            j_au = self.listePosAgent[choix][1]
+            pos_agent_x = self.listePosAgent[choix][0]
+            pos_agent_y = self.listePosAgent[choix][1]
+            print("POSITION x : " + str(pos_agent_x))
+            print("POSITION y : " + str(pos_agent_y))
+
             listePosautour = []
             listeFeromoneAutour = []
+            if pos_agent_x - 1 >= 0:
+                listePosautour.append([pos_agent_x - 1, pos_agent_y])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y])
+            if pos_agent_x - 1 >= 0 and pos_agent_y + 1 < self.taille:
+                listePosautour.append([pos_agent_x - 1, pos_agent_y + 1])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y + 1])
+            if pos_agent_y + 1 < self.taille:
+                listePosautour.append([pos_agent_x, pos_agent_y + 1])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x][pos_agent_y + 1])
+            if pos_agent_x + 1 < self.taille and pos_agent_y + 1 < self.taille:
+                listePosautour.append([pos_agent_x + 1, pos_agent_y + 1])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y + 1])
+            if pos_agent_x + 1 < self.taille:
+                listePosautour.append([pos_agent_x + 1, pos_agent_y])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y])
+            if pos_agent_x + 1 < self.taille and pos_agent_y - 1 >= 0:
+                listePosautour.append([pos_agent_x + 1, pos_agent_y - 1])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y - 1])
+            if pos_agent_y - 1 >= 0:
+                listePosautour.append([pos_agent_x, pos_agent_y - 1])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x][pos_agent_y - 1])
+            if pos_agent_x - 1 <= 0 and pos_agent_y - 1 <= 0:
+                listePosautour.append([pos_agent_x - 1, pos_agent_y - 1])
+                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y - 1])
 
-            if i>=1 and i <=self.taille -2 and j >= 1 and j<= self.taille -2:
-                listePosautour.append([i-1, j])
-                listePosautour.append([i-1, j+1])
-                listePosautour.append([i, j+1])
-                listePosautour.append([i+1, j+1])
-                listePosautour.append([i+1, j])
-                listePosautour.append([i+1, j-1])
-                listePosautour.append([i, j-1])
-                listePosautour.append([i-1, j-1])
-                listeFeromoneAutour.append(self.env[i-1][j])
-                listeFeromoneAutour.append(self.env[i - 1][j+1])
-                listeFeromoneAutour.append(self.env[i][j+1])
-                listeFeromoneAutour.append(self.env[i + 1][j+1])
-                listeFeromoneAutour.append(self.env[i + 1][j])
-                listeFeromoneAutour.append(self.env[i + 1][j+1])
-                listeFeromoneAutour.append(self.env[i ][j-1])
-                listeFeromoneAutour.append(self.env[i - 1][j-1])
+            Robot = None
+            robot_en_attente = False
+            for robot in self.liste_robot_attente:
+                if robot[1][0] == pos_agent_x and robot[1][1] == pos_agent_y :
+                    Robot = robot
+                    robot_en_attente = True
+            enAttente, Collab, newPosition = agent.perception_action(self.env[pos_agent_x][pos_agent_y], self.listePosAgent[choix], self.taille, listeFeromoneAutour ,listePosautour,robot_en_attente)
+            if Collab == True :
+                del self.liste_robot_attente[self.liste_robot_attente.index(Robot)]
+                self.liste_collaboration.append([Robot[0], agent.id])
+                for k in range (len(listePosautour)):
+                    self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
+                    # TODO : Cas ou d'autre agent son autour
+            if enAttente == True :
+                for k in range(len(listePosautour)):
+                    if listeFeromoneAutour[k] == 0:
+                        self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 1
 
-            elif i == 0:
-                    ##Se trouve en haut à gauche
-                    if j == 0:
-                        listePosautour.append([i, j+1])
-                        listePosautour.append([i+1, j+1])
-                        listePosautour.append([i+1, j])
-                        listeFeromoneAutour.append(self.env[i][j+1])
-                        listeFeromoneAutour.append(self.env[i + 1][j + 1])
-                        listeFeromoneAutour.append(self.env[i+1][j])
-                    ##Se trouve en haut à droite
-                    if j == 49:
-                        listePosautour.append([i+1, j])
-                        listePosautour.append([i+1, j-1])
-                        listePosautour.append([i, j-1])
-                        listeFeromoneAutour.append(self.env[i + 1][j])
-                        listeFeromoneAutour.append(self.env[i + 1][j - 1])
-                        listeFeromoneAutour.append(self.env[i][j - 1])
+            self.listePosAgent[choix] = newPosition
 
-            elif i == 49:
-                    ##Se trouve en bas à gauche
-                    if j == 0:
-                        listePosautour.append([i-1, j])
-                        listePosautour.append([i-1, j+1])
-                        listePosautour.append([i, j+1])
-                        listeFeromoneAutour.append(self.env[i - 1][j])
-                        listeFeromoneAutour.append(self.env[i - 1][j + 1])
-                        listeFeromoneAutour.append(self.env[i][j + 1])
-                    ##Se trouve en bas à gauche
-                    if j == 49:
-                        listePosautour.append([i-1, j])
-                        listePosautour.append([i, j-1])
-                        listePosautour.append([i-1, j-1])
-                        listeFeromoneAutour.append(self.env[i - 1][j])
-                        listeFeromoneAutour.append(self.env[i][j - 1])
-                        listeFeromoneAutour.append(self.env[i-1][j -1])
-            ##Se trouve sur le bord gauche
-            elif j == 0:
-                listePosautour.append([i - 1, j])
-                listePosautour.append([i-1, j + 1])
-                listePosautour.append([i, j + 1])
-                listePosautour.append([i + 1, j+1])
-                listePosautour.append([i+1, j])
-                listeFeromoneAutour.append(self.env[i - 1][j])
-                listeFeromoneAutour.append(self.env[i - 1][j + 1])
-                listeFeromoneAutour.append(self.env[i][j + 1])
-                listeFeromoneAutour.append(self.env[i + 1][j+1])
-                listeFeromoneAutour.append(self.env[i + 1][j])
-            ##Se trouve sur le bord droit
-            elif j == 49:
-                listePosautour.append([i - 1, j])
-                listePosautour.append([i + 1, j])
-                listePosautour.append([i + 1, j - 1])
-                listePosautour.append([i, j - 1])
-                listePosautour.append([i - 1, j - 1])
-                listeFeromoneAutour.append(self.env[i - 1][j])
-                listeFeromoneAutour.append(self.env[i + 1][j])
-                listeFeromoneAutour.append(self.env[i+1][j - 1])
-                listeFeromoneAutour.append(self.env[i][j - 1])
-                listeFeromoneAutour.append(self.env[i - 1][j-1])
-            ##Se trouve en haut
-            elif i == 0:
-                listePosautour.append([i, j+1])
-                listePosautour.append([i + 1, j+1])
-                listePosautour.append([i + 1, j])
-                listePosautour.append([i+1, j - 1])
-                listePosautour.append([i, j - 1])
-                listeFeromoneAutour.append(self.env[i][j+1])
-                listeFeromoneAutour.append(self.env[i + 1][j + 1])
-                listeFeromoneAutour.append(self.env[i+1][j])
-                listeFeromoneAutour.append(self.env[i + 1][j - 1])
-                listeFeromoneAutour.append(self.env[i][j-1])
-            ##Se trouve en bas
-            elif i == 49:
-                listePosautour.append([i - 1, j])
-                listePosautour.append([i - 1, j+1])
-                listePosautour.append([i, j + 1])
-                listePosautour.append([i, j - 1])
-                listePosautour.append([i - 1, j - 1])
-                listeFeromoneAutour.append(self.env[i - 1][j])
-                listeFeromoneAutour.append(self.env[i - 1][j + 1])
-                listeFeromoneAutour.append(self.env[i][j + 1])
-                listeFeromoneAutour.append(self.env[i][j - 1])
-                listeFeromoneAutour.append(self.env[i - 1][j-1])
-            print(i)
-            deplacement = agent.perception_action(self.env[i][j], self.listePosAgent[choix], self.taille, listeFeromoneAutour)
-            depot = random.uniform(0, 1)
-            prise = random.uniform(0, 1)
-            if agent.tenir == 0:
-                print(agent.pprise)
-                print(prise)
-                if prise < agent.pprise:
-                    if self.env[i][j] != 0:
-                        if self.env[i][j] == 3:
-                            if agent.debut_diffusion < agent.fin_diffusion:
-                                for posAgent in self.listePosAgent:
-                                    if posAgent[0] == i and posAgent[1] == j:
-                                        agent.tenir = self.env[i][j]
-                                        self.listeAgent[self.listePosAgent.index(posAgent)].tenir = self.env[i][j]
-                                        self.env[i][j] = 0
-                                        self.accept = True
-                                        agent.debut_diffusion = 0
-                                    else:
-                                        agent.debut_diffusion += 1
-                                        for posAutour in listePosautour:
-                                            self.env[posAutour[0]][posAutour[1]] = agent.feromone
-                            else:
-                                for posAutour in listePosautour:
-                                    self.env[posAutour[0]][posAutour[1]] = 0
-                    else:
-                        agent.tenir = self.env[i][j]
-                        self.env[i][j] = 0
-                    # print("Je souhaite prendre")
-            else:
-                if depot < agent.pdepot:
-                    if self.env[i][j] != 1 and self.env[i][j] != 2 and self.env[i][j] != 3:
-                        # print("Je souhaite déposer "+ str(agent.tenir))
-                        if agent.tenir == 3:
-                            for posAgent in self.listePosAgent:
-                                if posAgent[0] == i and posAgent[1] == j:
-                                    self.env[i][j] = agent.tenir
-                                    self.listeAgent[self.listePosAgent.index(posAgent)].tenir = 0
-                                    agent.tenir = 0
-                        else:
-                            self.env[i][j] = agent.tenir
-                            agent.tenir = 0
-            ##Tant qu'il ne diffuse pas
-            if agent.debut_diffusion == 0 or agent.debut_diffusion == 5:
-                if deplacement == 0:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                elif deplacement == 1:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                elif deplacement == 2:
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                elif deplacement == 3:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                elif deplacement == 4:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                elif deplacement == 5:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-                elif deplacement == 6:
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-                elif deplacement == 7:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-            ##S'il tient un objet C
-            elif agent.tenir == 3:
-                for posAgent in self.listePosAgent:
-                    if posAgent[0] == i and posAgent[1] == j:
-                        self.index_agent_aide = self.listePosAgent.index(posAgent)
-                if deplacement == 0:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][0] -= self.listeAgent[self.index_agent_aide].pas
-                elif deplacement == 1:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][0] -= self.listeAgent[self.index_agent_aide].pas
-                    self.listePosAgent[self.index_agent_aide][1] += self.listeAgent[self.index_agent_aide].pas
-                elif deplacement == 2:
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][1] += self.listeAgent[self.index_agent_aide].pas
-                elif deplacement == 3:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][0] += self.listeAgent[self.index_agent_aide].pas
-                    self.listePosAgent[self.index_agent_aide][1] += self.listeAgent[self.index_agent_aide].pas
-                elif deplacement == 4:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][0] += self.listeAgent[self.index_agent_aide].pas
-                elif deplacement == 5:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][0] += self.listeAgent[self.index_agent_aide].pas
-                    self.listePosAgent[self.index_agent_aide][1] -= self.listeAgent[self.index_agent_aide].pas
-                elif deplacement == 6:
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][1] -= self.listeAgent[self.index_agent_aide].pas
-                elif deplacement == 7:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-                    self.listePosAgent[self.index_agent_aide][0] -= self.listeAgent[self.index_agent_aide].pas
-                    self.listePosAgent[self.index_agent_aide][1] -= self.listeAgent[self.index_agent_aide].pas
-            ##Si tient un objet autre que C ou ne tient rien et ne diffuse rien
-            else:
-                if deplacement == 0:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                elif deplacement == 1:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                elif deplacement == 2:
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                elif deplacement == 3:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] += self.listeAgent[choix].pas
-                elif deplacement == 4:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                elif deplacement == 5:
-                    self.listePosAgent[choix][0] += self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-                elif deplacement == 6:
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
-                elif deplacement == 7:
-                    self.listePosAgent[choix][0] -= self.listeAgent[choix].pas
-                    self.listePosAgent[choix][1] -= self.listeAgent[choix].pas
+
+
 
             # print(array)
             # affichageAgent(listeAgent, listePosAgent)

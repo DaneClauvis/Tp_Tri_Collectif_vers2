@@ -1,4 +1,6 @@
+import random
 from random import randint
+
 
 def update_memoire(actual, memoire):
     if len(memoire) > 10:
@@ -51,6 +53,7 @@ class Agent:
         self.feromone = -1
         self.debut_diffusion = 0
         self.fin_diffusion = 5
+        self.appel = 0
 
     def prob(self, actual, memoire, tenir):
         pprise = -1
@@ -96,177 +99,33 @@ class Agent:
         if actual == 3:
             self.feromone = 0.9
 
-    def perception_action(self, actual, pos, taille_grille, feromoneAutour):
-        o =0
-        if actual == 3:
-            self.feromone = 0.9
-        self.memoire = update_memoire(actual, self.memoire)
-        #Si l'agent est sur la première ligne
-        if pos[0] == 0:
-            #Si l'agent est sur la première colonne (0;0)
-            if pos[1] == 0:
-                ##self.maxfer = max(feromoneAutour)
-                if self.tenir == 0:
-                    for feromone in feromoneAutour:
-                        if feromone == 3:
-                            o = feromoneAutour.index(3) + 2
-                        if 0.7 <= feromone and 0.9 >= feromone:
-                            o = feromoneAutour.index(max(feromoneAutour)) + 2
+    def perception_action(self, actual, pos, taille_grille, feromoneAutour, pos_accessible, robot):
 
-                        else:
-                            o = randint(2, 4)
-                            self.pprise = self.prob(actual, self.memoire, self.tenir)
-                else:
-                    o = randint(2, 4)
-                    self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                return o
-            #Si l'agent est à la dernière colonne (0;49)
-            elif pos[1] == taille_grille - 1:
+        if self.tenir == 0:
+            if actual == 3:
+                self.feromone = 0.9
+            self.memoire = update_memoire(actual, self.memoire)
 
-                if self.tenir == 0:
-                    for feromone in feromoneAutour:
-                        if feromone == 3:
-                            o = feromoneAutour.index(3) + 4
-                        if 0.7 <= feromone and 0.9 >= feromone:
-                            o = feromoneAutour.index(max(feromoneAutour)) + 4
-                        else:
-                            o = randint(4, 6)
-                            self.pprise = self.prob(actual, self.memoire, self.tenir)
-                else:
-                    o = randint(4, 6)
-                    self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                return o
-            #Sur le bord haut
-            else:
-                if self.tenir == 0:
-                    for feromone in feromoneAutour:
-                        if feromone == 3:
-                            o = feromoneAutour.index(3) + 2
-                        if 0.7 <= feromone and 0.9 >= feromone:
-                            o = feromoneAutour.index(max(feromoneAutour)) + 2
-                        else:
-                            o = randint(2, 6)
-                            self.pprise = self.prob(actual, self.memoire, self.tenir)
-                else:
-                    o = randint(2, 6)
-                    self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                return o
+            #Si il appel à l'aide, il continue si ça fait moins de 10 tours
+            if self.appel > 0 and self.appel < 10:
+                self.appel = self.appel + 1
+                return True, False, pos #En attente, Collaboration acceptée ou non, position
 
-        elif pos[0] == taille_grille - 1: #Si l'agent est sur la dernière ligne
-            if pos[1] == 0: #Si l'agent est sur la première colonne (49;0)
-                if self.tenir == 0:
-                    for feromone in feromoneAutour:
-                        if feromone == 3:
-                            o = feromoneAutour.index(3)
-                        if 0.7 <= feromone and 0.9 >= feromone:
-                            o = feromoneAutour.index(max(feromoneAutour))
-                        else:
-                            o = randint(0, 2)
-                            self.pprise = self.prob(actual, self.memoire, self.tenir)
-                else:
-                    o = randint(0, 2)
-                    self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                return o
-            elif pos[1] == taille_grille - 1: #Si l'agent est à la dernière colonne (49;49)
-                if self.tenir == 0:
-                    for feromone in feromoneAutour:
-                        if feromone == 3:
-                            o = feromoneAutour.index(3)
-                        if 0.7 <= feromone and 0.9 >= feromone:
-                            o = feromoneAutour.index(max(feromoneAutour))
-                        else:
-                            o = randint(0, 2)
-                            self.pprise = self.prob(actual, self.memoire, self.tenir)
-                else:
-                    o = randint(0, 2)
-                    self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                if o == 1 or o == 2:
-                    o += 5
-                    """if o == 0: #Déplacement vers le haut
-                            return o
-                        elif o == 1: #Déplacement à gauche
-                            o = o + 5
-                            return 6
-                        elif o == 2: #Déplacement en haut à gauche
-                            o = o+5
-                            return 7"""
-                return o
-            else: #Sur le bord bas
-                if self.tenir == 0:
+            # Si la case sur laquelle on se trouve vaut 3, on appelle à l'aide si aucun autre robot n'appelle à l'aide
+            if actual == 3 and robot == False:
+                self.appel = True
+                return True, False, pos
 
-                    for feromone in feromoneAutour:
-                        if feromone == 3:
-                            o = feromoneAutour.index(3)
-                        if 0.7 <= feromone and 0.9 >= feromone:
-                            o = feromoneAutour.index(max(feromoneAutour))
-                        else:
-                            o = randint(0, 4)
-                            self.pprise = self.prob(actual, self.memoire, self.tenir)
-                else:
-                    self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                    o = randint(0, 4)
-                if o == 3 or o == 4:
-                    o+=3
-                return o
+            if actual == 3 and robot == True:
+                self.tenir = 3
+                return False, True, pos
 
-        #Au bord gauche
-        elif pos[1] == 0:
-            if self.tenir == 0:
-                for feromone in feromoneAutour:
-                    if feromone == 3:
-                        o = feromoneAutour.index(3)
-                    if 0.7 <= feromone and 0.9 >= feromone:
-                        o = feromoneAutour.index(max(feromoneAutour))
-                    else:
-                        o = randint(0, 4)
-                        self.pprise = self.prob(actual, self.memoire, self.tenir)
-            else:
-                self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                o = randint(0, 4)
-            return o
+            pheromone_max = max(feromoneAutour)
+            if pheromone_max != 0 :
+                return False, False, pos_accessible[feromoneAutour.index(pheromone_max)]
+            else :
+                return False, False, pos_accessible[randint(0, len(pos_accessible)-1)]
 
-        #Au bord droit
-        elif pos[1] == taille_grille - 1:
-            if self.tenir == 0:
-                for feromone in feromoneAutour:
-                    if feromone == 3:
-                        o = feromoneAutour.index(3)
-                        if o == 1 or o == 2 or o == 3 or o == 4:
-                            o+=3
-                        return o
-                    if 0.7 <= feromone and 0.9 >= feromone:
-                        o = feromoneAutour.index(max(feromoneAutour))
-                        if o == 1 or o == 2 or o == 3 or o == 4:
-                            o+=3
-                        return o
-                    else:
-                        o = randint(4, 8)
-                        self.pprise = self.prob(actual, self.memoire, self.tenir)
-                        if o == 8:
-                            # Il se déplace en haut
-                            return 0
-                        else:
-                            return o
-            else:
-                self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                o = randint(4, 8)
-                if o == 8:
-                # Il se déplace en haut
-                    return 0
-                else:
-                    return o
-        #Dans les 8 cas
-        else:
-            if self.tenir == 0:
-                for feromone in feromoneAutour:
-                    if feromone == 3:
-                        o = feromoneAutour.index(3)
-                    if 0.7 <= feromone and 0.9 >= feromone:
-                        o = feromoneAutour.index(max(feromoneAutour))
-                    else:
-                        o = randint(0, 7)
-                        self.pprise = self.prob(actual, self.memoire, self.tenir)
-            else:
-                self.pdepot = self.prob(actual, self.memoire, self.tenir)
-                o = randint(0, 7)
-            return o
+        else :
+            return False, False, pos_accessible[randint(0, len(pos_accessible)-1)]
+
