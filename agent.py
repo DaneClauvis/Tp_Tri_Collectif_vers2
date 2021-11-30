@@ -2,11 +2,13 @@ import random
 from random import randint
 
 
-def update_memoire(actual, memoire):
+def update_memoire(actual, memoire, appel):
     if len(memoire) > 10:
         del memoire[0]
-    if actual == 1 or actual == 2 or actual == 3 or actual == 0:
+    if appel == 0:
         memoire.append(actual)
+    else:
+        memoire.append(0)
     return memoire
 
 
@@ -95,19 +97,16 @@ class Agent:
                 pdepot = (f3 / (0.3 + f3)) ** 2
                 return pdepot
 
-    def depot_ferome(self, actual):
-        if actual == 3:
-            self.feromone = 0.9
 
     def perception_action(self, actual, pos, taille_grille, feromoneAutour, pos_accessible, robot):
-        self.memoire = update_memoire(actual, self.memoire)
+        self.memoire = update_memoire(actual, self.memoire, self.appel)
 
         if self.tenir == 0:
             # Si il appel à l'aide, il continue si ça fait moins de 10 tours
             if self.appel > 0 and self.appel < 3:
                 self.appel = self.appel + 1
                 # print("JATEND")
-                return False, False, False, pos, - 1  # En attente, Collaboration acceptée ou non, position, si on prend ou pas
+                return False, False, False, pos, -1 # En attente, Collaboration acceptée ou non, position, si on prend ou pas
             if self.appel >= 3:
                 self.appel = 0
                 return False, False, True, pos_accessible[randint(0, len(pos_accessible) - 1)], -1
@@ -117,9 +116,10 @@ class Agent:
                 self.appel = 1
                 return True, False, False, pos, -1
 
-            # Si un robot appelle déjà à l'aide sur la case
+            # Si un robot appelle déjà à l'aide sur la case, il est sur le point de fusionner
             if actual == 3 and robot == True:
                 self.tenir = 3
+
                 return False, True, False, pos, -1
 
             # On prend un objet avec une probabilité pprise
@@ -141,9 +141,10 @@ class Agent:
         else:
             depot = -1
             pdepot = self.prob(actual, self.memoire, self.tenir)
-            r = random.uniform(0, 1)
-            if r < pdepot:
-                depot = self.tenir
-                self.tenir = 0
+            if actual == 0:
+                r = random.uniform(0, 1)
+                if r < pdepot:
+                    depot = self.tenir
+                    self.tenir = 0
 
             return False, False, False, pos_accessible[randint(0, len(pos_accessible) - 1)], depot

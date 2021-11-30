@@ -22,7 +22,6 @@ class Environnement:
     liste_collaboration = []
     liste_robot_attente = []
     liste_pheromone = np.zeros((taille, taille))
-    accept = False
     index_agent_aide = -1
 
     def alea(self):
@@ -152,8 +151,7 @@ class Environnement:
             Robot = None
             robot_en_attente = False
             for robot in self.liste_robot_attente:
-                if self.listePosAgent[robot][0] == pos_agent_x and self.listePosAgent[robot][
-                    1] == pos_agent_y and robot != choix:
+                if self.listePosAgent[robot][0] == pos_agent_x and self.listePosAgent[robot][1] == pos_agent_y and robot != choix:
                     Robot = robot
                     robot_en_attente = True
             enAttente, Collab, arrete, newPosition, act = agent.perception_action(self.env[pos_agent_x][pos_agent_y],
@@ -166,14 +164,15 @@ class Environnement:
                 for k in range(len(listePosautour)):
                     self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
                     self.liste_pheromone[pos_agent_x][pos_agent_y] = 0
-                    # TODO : Cas ou d'autre agent son autour
+                    # TODO : Cas ou d'autre agents sont autour
             if enAttente == True:
                 self.liste_robot_attente.append(choix)
                 print("JAJOUTE")
                 for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 1
-                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 1
+                        ##Question???
+                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 2
             if arrete == True:
                 del self.liste_robot_attente[self.liste_robot_attente.index(choix)]
                 for k in range(len(listePosautour)):
@@ -184,7 +183,10 @@ class Environnement:
                 self.env[pos_agent_x][pos_agent_y] = act
             if act == -2:
                 self.env[pos_agent_x][pos_agent_y] = 0
-
+            """if suivi == 1:
+                self.listePosAgent[choix] = newPosition
+                self.listePosAgent[Robot] = newPosition
+            else:"""
             self.listePosAgent[choix] = newPosition
 
             # print(array)
