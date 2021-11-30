@@ -134,7 +134,7 @@ class Agent:
 
             litse_pheromone = feromoneAutour
             pheromone_max = max(litse_pheromone)
-            while pheromone_max != 0:
+            while pheromone_max != 0 :
                 # Creation de la liste contenant les index avec le pheromone max
                 liste = []
                 for k in range(len(feromoneAutour)):
@@ -145,7 +145,10 @@ class Agent:
                 if r < pheromone_max:
                     ra = randint(0, len(liste) - 1)
                     return False, False, False, pos_accessible[liste[ra]], prend
-                pheromone_max = max(litse_pheromone)
+                if len(litse_pheromone) !=0 :
+                    pheromone_max = max(litse_pheromone)
+                else :
+                    pheromone_max = 0
                 # On crée une liste contenant les index
 
             return False, False, False, pos_accessible[randint(0, len(pos_accessible) - 1)], prend

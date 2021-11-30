@@ -54,7 +54,7 @@ class Environnement:
             self.env[x][y] = 2
 
         ##Creation Objet C
-        for i in range(50):
+        for i in range(30):
             vide = False
             x = self.alea()
             y = self.alea()
