@@ -20,8 +20,8 @@ class Environnement:
     liste_cluster = []
     liste_nb_ite = []
     liste_collaboration = []
-    liste_robot_attente =[]
-    liste_pheromone = np.zeros((taille,taille))
+    liste_robot_attente = []
+    liste_pheromone = np.zeros((taille, taille))
     accept = False
     index_agent_aide = -1
 
@@ -55,7 +55,7 @@ class Environnement:
             self.env[x][y] = 2
 
         ##Creation Objet C
-        for i in range(200):
+        for i in range(1):
             vide = False
             x = self.alea()
             y = self.alea()
@@ -102,7 +102,7 @@ class Environnement:
                 "The average silhouette_score is :",
                 silhouette_avg)"""
             # filter rows of original data
-        #print("Le nombre de cluster : " + str(nb_cluster))
+        # print("Le nombre de cluster : " + str(nb_cluster))
         """Y = np.array(liste_sil)
         X = np.array(range_n_clusters)
         plt.plot(X, Y)
@@ -121,8 +121,6 @@ class Environnement:
             agent = self.listeAgent[choix]
             pos_agent_x = self.listePosAgent[choix][0]
             pos_agent_y = self.listePosAgent[choix][1]
-            print("POSITION x : " + str(pos_agent_x))
-            print("POSITION y : " + str(pos_agent_y))
 
             listePosautour = []
             listeFeromoneAutour = []
@@ -147,46 +145,61 @@ class Environnement:
             if pos_agent_y - 1 >= 0:
                 listePosautour.append([pos_agent_x, pos_agent_y - 1])
                 listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x][pos_agent_y - 1])
-            if pos_agent_x - 1 <= 0 and pos_agent_y - 1 <= 0:
+            if pos_agent_x - 1 >= 0 and pos_agent_y - 1 >= 0:
                 listePosautour.append([pos_agent_x - 1, pos_agent_y - 1])
                 listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y - 1])
 
             Robot = None
             robot_en_attente = False
             for robot in self.liste_robot_attente:
-                if robot[1][0] == pos_agent_x and robot[1][1] == pos_agent_y :
+                if self.listePosAgent[robot][0] == pos_agent_x and self.listePosAgent[robot][
+                    1] == pos_agent_y and robot != choix:
                     Robot = robot
                     robot_en_attente = True
-            enAttente, Collab, newPosition = agent.perception_action(self.env[pos_agent_x][pos_agent_y], self.listePosAgent[choix], self.taille, listeFeromoneAutour ,listePosautour,robot_en_attente)
-            if Collab == True :
-                del self.liste_robot_attente[self.liste_robot_attente.index(Robot)]
-                self.liste_collaboration.append([Robot[0], agent.id])
-                for k in range (len(listePosautour)):
+            enAttente, Collab, arrete, newPosition, act = agent.perception_action(self.env[pos_agent_x][pos_agent_y],
+                                                                                  self.listePosAgent[choix],
+                                                                                  self.taille, listeFeromoneAutour,
+                                                                                  listePosautour, robot_en_attente)
+            if Collab == True:
+                del self.liste_robot_attente[self.liste_robot_attente.index(choix)]
+                self.liste_collaboration.append([Robot, agent.id])
+                for k in range(len(listePosautour)):
                     self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
+                    self.liste_pheromone[pos_agent_x][pos_agent_y] = 0
                     # TODO : Cas ou d'autre agent son autour
-            if enAttente == True :
+            if enAttente == True:
+                self.liste_robot_attente.append(choix)
+                print("JAJOUTE")
                 for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 1
+                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 1
+            if arrete == True:
+                del self.liste_robot_attente[self.liste_robot_attente.index(choix)]
+                for k in range(len(listePosautour)):
+                    if listeFeromoneAutour[k] == 0:
+                        self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
+                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 0
+            if act > 0:
+                self.env[pos_agent_x][pos_agent_y] = act
+            if act == -2:
+                self.env[pos_agent_x][pos_agent_y] = 0
 
             self.listePosAgent[choix] = newPosition
 
-
-
-
             # print(array)
             # affichageAgent(listeAgent, listePosAgent)
-            #print(cmpt)
-            if cmpt %500000==0:
+            print(cmpt)
+            """if cmpt %500000==0:
 
                 nb_1 = self.selecting_nb_cluster(self.liste_coord(1))
                 nb_2 = self.selecting_nb_cluster(self.liste_coord(2))
                 self.liste_cluster.append(nb_2 + nb_1)
-                self.liste_nb_ite.append(cmpt)
+                self.liste_nb_ite.append(cmpt)"""
             if cmpt == 1000000 or cmpt == 2000000 or cmpt == 3000000 or cmpt % 5000000 == 0:
 
                 app2 = QApplication.instance()
-                print("Affichage de la grille pour "+ str(cmpt) + " itérations !")
+                print("Affichage de la grille pour " + str(cmpt) + " itérations !")
                 if not app2:  # sinon on crée une instance de QApplication
                     app2 = QApplication(sys.argv)
 
@@ -202,7 +215,7 @@ class Environnement:
             cmpt += 1
         Y = np.array(self.liste_cluster)
         X = np.array(self.liste_nb_ite)
-        plt.plot(X,Y)
+        plt.plot(X, Y)
         plt.title("Evolution du nombre de clusters")
         plt.xlabel("Nombre d'itérations")
         plt.ylabel("Nombre de clusters")

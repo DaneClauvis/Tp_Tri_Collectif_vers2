@@ -10,12 +10,11 @@ def update_memoire(actual, memoire):
     return memoire
 
 
-
-def prop_Agents (liste, objet):
+def prop_Agents(liste, objet):
     f = 0
     f_c = 0
     if objet == 1:
-        for i in range (len(liste)):
+        for i in range(len(liste)):
             if liste[i] == objet:
                 f = f + 1
             if liste[i] == 2:
@@ -38,8 +37,9 @@ def prop_Agents (liste, objet):
                 f_c = f_c + 1
             if liste[i] == 2:
                 f_c = f_c + 1
-    f = (f + f_c*0.1) / len(liste)
+    f = (f + f_c * 0.1) / len(liste)
     return f
+
 
 class Agent:
     def __init__(self, id):
@@ -48,7 +48,7 @@ class Agent:
         self.memoire = []
         self.pprise = -1
         self.pdepot = -1
-        self.change = 0 #Pris ou déposé
+        self.change = 0  # Pris ou déposé
         self.pas = 1
         self.feromone = -1
         self.debut_diffusion = 0
@@ -79,7 +79,7 @@ class Agent:
                 return pprise
             else:
                 return pprise
-        else:# actual != 0.9 and actual != 0.8 and actual != 0.7:
+        else:  # actual != 0.9 and actual != 0.8 and actual != 0.7:
             if tenir == 0:
                 return pdepot
             elif tenir == 1:
@@ -100,32 +100,50 @@ class Agent:
             self.feromone = 0.9
 
     def perception_action(self, actual, pos, taille_grille, feromoneAutour, pos_accessible, robot):
+        self.memoire = update_memoire(actual, self.memoire)
 
         if self.tenir == 0:
-            if actual == 3:
-                self.feromone = 0.9
-            self.memoire = update_memoire(actual, self.memoire)
-
-            #Si il appel à l'aide, il continue si ça fait moins de 10 tours
-            if self.appel > 0 and self.appel < 10:
+            # Si il appel à l'aide, il continue si ça fait moins de 10 tours
+            if self.appel > 0 and self.appel < 3:
                 self.appel = self.appel + 1
-                return True, False, pos #En attente, Collaboration acceptée ou non, position
+                # print("JATEND")
+                return False, False, False, pos, - 1  # En attente, Collaboration acceptée ou non, position, si on prend ou pas
+            if self.appel >= 3:
+                self.appel = 0
+                return False, False, True, pos_accessible[randint(0, len(pos_accessible) - 1)], -1
 
             # Si la case sur laquelle on se trouve vaut 3, on appelle à l'aide si aucun autre robot n'appelle à l'aide
             if actual == 3 and robot == False:
-                self.appel = True
-                return True, False, pos
+                self.appel = 1
+                return True, False, False, pos, -1
 
+            # Si un robot appelle déjà à l'aide sur la case
             if actual == 3 and robot == True:
                 self.tenir = 3
-                return False, True, pos
+                return False, True, False, pos, -1
 
+            # On prend un objet avec une probabilité pprise
+            prend = -1
+            if actual != 0:
+                pprise = self.prob(actual, self.memoire, self.tenir)
+                r = random.uniform(0, 1)
+
+                if r < pprise:
+                    self.tenir = actual
+                    prend = -2
+
+            # Sinon on se déplace vers la phéromone la plus importante
             pheromone_max = max(feromoneAutour)
-            if pheromone_max != 0 :
-                return False, False, pos_accessible[feromoneAutour.index(pheromone_max)]
-            else :
-                return False, False, pos_accessible[randint(0, len(pos_accessible)-1)]
+            if pheromone_max != 0:
+                return False, False, False, pos_accessible[feromoneAutour.index(pheromone_max)], prend
+            else:
+                return False, False, False, pos_accessible[randint(0, len(pos_accessible) - 1)], prend
+        else:
+            depot = -1
+            pdepot = self.prob(actual, self.memoire, self.tenir)
+            r = random.uniform(0, 1)
+            if r < pdepot:
+                depot = self.tenir
+                self.tenir = 0
 
-        else :
-            return False, False, pos_accessible[randint(0, len(pos_accessible)-1)]
-
+            return False, False, False, pos_accessible[randint(0, len(pos_accessible) - 1)], depot
