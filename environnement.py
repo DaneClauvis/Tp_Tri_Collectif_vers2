@@ -54,7 +54,7 @@ class Environnement:
             self.env[x][y] = 2
 
         ##Creation Objet C
-        for i in range(1):
+        for i in range(50):
             vide = False
             x = self.alea()
             y = self.alea()
@@ -73,6 +73,7 @@ class Environnement:
             agent = Agent(i)
             self.listeAgent.append(agent)
             self.listePosAgent.append([x, y])
+            self.liste_robot_attente.append(False)
 
     def liste_coord(self, p):
         liste = []
@@ -121,83 +122,91 @@ class Environnement:
             pos_agent_x = self.listePosAgent[choix][0]
             pos_agent_y = self.listePosAgent[choix][1]
 
-            listePosautour = []
-            listeFeromoneAutour = []
-            if pos_agent_x - 1 >= 0:
-                listePosautour.append([pos_agent_x - 1, pos_agent_y])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y])
-            if pos_agent_x - 1 >= 0 and pos_agent_y + 1 < self.taille:
-                listePosautour.append([pos_agent_x - 1, pos_agent_y + 1])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y + 1])
-            if pos_agent_y + 1 < self.taille:
-                listePosautour.append([pos_agent_x, pos_agent_y + 1])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x][pos_agent_y + 1])
-            if pos_agent_x + 1 < self.taille and pos_agent_y + 1 < self.taille:
-                listePosautour.append([pos_agent_x + 1, pos_agent_y + 1])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y + 1])
-            if pos_agent_x + 1 < self.taille:
-                listePosautour.append([pos_agent_x + 1, pos_agent_y])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y])
-            if pos_agent_x + 1 < self.taille and pos_agent_y - 1 >= 0:
-                listePosautour.append([pos_agent_x + 1, pos_agent_y - 1])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y - 1])
-            if pos_agent_y - 1 >= 0:
-                listePosautour.append([pos_agent_x, pos_agent_y - 1])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x][pos_agent_y - 1])
-            if pos_agent_x - 1 >= 0 and pos_agent_y - 1 >= 0:
-                listePosautour.append([pos_agent_x - 1, pos_agent_y - 1])
-                listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y - 1])
+            #On regarde si ce robot est associé à un autre robot
+            suiveur = -1
+            placegagent = 0
+            for k in range(len(self.liste_collaboration)):
+                if self.liste_collaboration[k][0] == choix :
+                    suiveur = self.liste_collaboration[k][1]
+                    placegagent = 0
+                if self.liste_collaboration[k][1] == choix:
+                    suiveur = self.liste_collaboration[k][0]
+                    placegagent =1
 
+            #On construit la liste des position présente autour de l'agent ainsi que les phéromone
+            listePosautour, listeFeromoneAutour = self.position_phero_autour(pos_agent_x, pos_agent_y)
+
+            #On regarde si un robot est en attente (s'il appel à l'aide)
             Robot = None
             robot_en_attente = False
-            for robot in self.liste_robot_attente:
-                if self.listePosAgent[robot][0] == pos_agent_x and self.listePosAgent[robot][1] == pos_agent_y and robot != choix:
-                    Robot = robot
+            for k in range (len(self.liste_robot_attente)):
+                if self.listePosAgent[k][0] == pos_agent_x and self.listePosAgent[k][1] == pos_agent_y and choix!=k and self.liste_robot_attente[k]==True:
+                    Robot = k
                     robot_en_attente = True
+
+            #L'agent fait sa boucle perception/action
             enAttente, Collab, arrete, newPosition, act = agent.perception_action(self.env[pos_agent_x][pos_agent_y],
                                                                                   self.listePosAgent[choix],
                                                                                   self.taille, listeFeromoneAutour,
                                                                                   listePosautour, robot_en_attente)
+
+            #Si l'agent rentre en collaboration
             if Collab == True:
-                del self.liste_robot_attente[self.liste_robot_attente.index(choix)]
+                self.listeAgent[Robot].tenir = 3
+                self.listeAgent[Robot].appel = 0
+                self.liste_robot_attente[Robot] = False
+                self.liste_robot_attente[choix] = False
                 self.liste_collaboration.append([Robot, agent.id])
                 for k in range(len(listePosautour)):
                     self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
                     self.liste_pheromone[pos_agent_x][pos_agent_y] = 0
                     # TODO : Cas ou d'autre agents sont autour
+            #Si l'agent rentre en attente
             if enAttente == True:
-                self.liste_robot_attente.append(choix)
-                print("JAJOUTE")
+                self.liste_robot_attente[choix] = True
+
                 for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
-                        self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 1
+                        self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0.8
                         ##Question???
-                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 2
+                self.liste_pheromone[pos_agent_x][pos_agent_y] = 1
+
+            #Si le robot arrete d'attendre car aucun robot n'est venu l'aider
             if arrete == True:
-                del self.liste_robot_attente[self.liste_robot_attente.index(choix)]
+                self.liste_robot_attente[choix] = False
                 for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
                         self.liste_pheromone[pos_agent_x][pos_agent_y] = 0
+            #Si l'agent pose un objet
             if act > 0:
                 self.env[pos_agent_x][pos_agent_y] = act
+            #Si l'agent prend l'objet courant
             if act == -2:
                 self.env[pos_agent_x][pos_agent_y] = 0
             """if suivi == 1:
                 self.listePosAgent[choix] = newPosition
                 self.listePosAgent[Robot] = newPosition
             else:"""
+            #On déplace l'agent
             self.listePosAgent[choix] = newPosition
+            #On deplace eventuellement l'agent suiveur
+            if suiveur != -1:
+                if act ==3:
+                    self.listeAgent[suiveur].tenir = 0
+                    if placegagent == 0 :
+                        del self.liste_collaboration[self.liste_collaboration.index([choix, suiveur])]
+                    else :
+                        del self.liste_collaboration[self.liste_collaboration.index([suiveur, choix])]
+                else :
+                    self.listePosAgent[suiveur] = newPosition
 
-            # print(array)
-            # affichageAgent(listeAgent, listePosAgent)
-            print(cmpt)
             """if cmpt %500000==0:
-
                 nb_1 = self.selecting_nb_cluster(self.liste_coord(1))
                 nb_2 = self.selecting_nb_cluster(self.liste_coord(2))
                 self.liste_cluster.append(nb_2 + nb_1)
                 self.liste_nb_ite.append(cmpt)"""
+
             if cmpt == 1000000 or cmpt == 2000000 or cmpt == 3000000 or cmpt % 5000000 == 0:
 
                 app2 = QApplication.instance()
@@ -235,3 +244,33 @@ class Environnement:
 
         # exécution de l'application, l'exécution permet de gérer les événements
         app2.exec_()
+
+
+    def position_phero_autour (self, pos_agent_x, pos_agent_y):
+        listePosautour = []
+        listeFeromoneAutour = []
+        if pos_agent_x - 1 >= 0:
+            listePosautour.append([pos_agent_x - 1, pos_agent_y])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y])
+        if pos_agent_x - 1 >= 0 and pos_agent_y + 1 < self.taille:
+            listePosautour.append([pos_agent_x - 1, pos_agent_y + 1])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y + 1])
+        if pos_agent_y + 1 < self.taille:
+            listePosautour.append([pos_agent_x, pos_agent_y + 1])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x][pos_agent_y + 1])
+        if pos_agent_x + 1 < self.taille and pos_agent_y + 1 < self.taille:
+            listePosautour.append([pos_agent_x + 1, pos_agent_y + 1])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y + 1])
+        if pos_agent_x + 1 < self.taille:
+            listePosautour.append([pos_agent_x + 1, pos_agent_y])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y])
+        if pos_agent_x + 1 < self.taille and pos_agent_y - 1 >= 0:
+            listePosautour.append([pos_agent_x + 1, pos_agent_y - 1])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x + 1][pos_agent_y - 1])
+        if pos_agent_y - 1 >= 0:
+            listePosautour.append([pos_agent_x, pos_agent_y - 1])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x][pos_agent_y - 1])
+        if pos_agent_x - 1 >= 0 and pos_agent_y - 1 >= 0:
+            listePosautour.append([pos_agent_x - 1, pos_agent_y - 1])
+            listeFeromoneAutour.append(self.liste_pheromone[pos_agent_x - 1][pos_agent_y - 1])
+        return listePosautour, listeFeromoneAutour
