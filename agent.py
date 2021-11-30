@@ -145,7 +145,7 @@ class Agent:
                 if r < pheromone_max:
                     ra = randint(0, len(liste) - 1)
                     return False, False, False, pos_accessible[liste[ra]], prend
-                if len(litse_pheromone !=0):
+                if len(litse_pheromone) !=0 :
                     pheromone_max = max(litse_pheromone)
                 else :
                     pheromone_max = 0
