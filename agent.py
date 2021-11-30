@@ -120,7 +120,7 @@ class Agent:
             if actual == 3 and robot == True:
                 self.tenir = 3
 
-                return False, True, False, pos, -1
+                return False, True, False, pos_accessible[randint(0, len(pos_accessible) - 1)], -2
 
             # On prend un objet avec une probabilité pprise
             prend = -1
@@ -133,11 +133,24 @@ class Agent:
                     prend = -2
 
             # Sinon on se déplace vers la phéromone la plus importante
-            pheromone_max = max(feromoneAutour)
-            if pheromone_max != 0:
-                return False, False, False, pos_accessible[feromoneAutour.index(pheromone_max)], prend
-            else:
-                return False, False, False, pos_accessible[randint(0, len(pos_accessible) - 1)], prend
+
+            litse_pheromone = feromoneAutour
+            pheromone_max = max(litse_pheromone)
+            while pheromone_max != 0:
+                #Creation de la liste contenant les index avec le pheromone max
+                liste = []
+                for k in range(len(feromoneAutour)):
+                    if feromoneAutour[k] == pheromone_max:
+                        liste.append(k)
+                del litse_pheromone[litse_pheromone.index(pheromone_max)]
+                r = random.uniform(0,1)
+                if r < pheromone_max:
+                    ra = randint(0,len(liste)-1)
+                    return False, False, False, pos_accessible[liste[ra]], prend
+                pheromone_max = max(litse_pheromone)
+                #On crée une liste contenant les index
+
+            return False, False, False, pos_accessible[randint(0, len(pos_accessible) - 1)], prend
         else:
             depot = -1
             pdepot = self.prob(actual, self.memoire, self.tenir)
