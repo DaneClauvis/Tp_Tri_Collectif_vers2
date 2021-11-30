@@ -54,7 +54,7 @@ class Environnement:
             self.env[x][y] = 2
 
         ##Creation Objet C
-        for i in range(1):
+        for i in range(50):
             vide = False
             x = self.alea()
             y = self.alea()
@@ -73,6 +73,7 @@ class Environnement:
             agent = Agent(i)
             self.listeAgent.append(agent)
             self.listePosAgent.append([x, y])
+            self.liste_robot_attente.append(False)
 
     def liste_coord(self, p):
         liste = []
@@ -138,9 +139,9 @@ class Environnement:
             #On regarde si un robot est en attente (s'il appel à l'aide)
             Robot = None
             robot_en_attente = False
-            for robot in self.liste_robot_attente:
-                if self.listePosAgent[robot][0] == pos_agent_x and self.listePosAgent[robot][1] == pos_agent_y and robot != choix:
-                    Robot = robot
+            for k in range (len(self.liste_robot_attente)):
+                if self.listePosAgent[k][0] == pos_agent_x and self.listePosAgent[k][1] == pos_agent_y and choix!=k and self.liste_robot_attente[k]==True:
+                    Robot = k
                     robot_en_attente = True
 
             #L'agent fait sa boucle perception/action
@@ -151,12 +152,10 @@ class Environnement:
 
             #Si l'agent rentre en collaboration
             if Collab == True:
-                print("Le robot rentre en collaboration")
-                print(self.liste_robot_attente)
                 self.listeAgent[Robot].tenir = 3
                 self.listeAgent[Robot].appel = 0
-                print(suiveur)
-                del self.liste_robot_attente[self.liste_robot_attente.index(Robot)]
+                self.liste_robot_attente[Robot] = False
+                self.liste_robot_attente[choix] = False
                 self.liste_collaboration.append([Robot, agent.id])
                 for k in range(len(listePosautour)):
                     self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
@@ -164,9 +163,8 @@ class Environnement:
                     # TODO : Cas ou d'autre agents sont autour
             #Si l'agent rentre en attente
             if enAttente == True:
-                print("Le robot rentre en attente")
-                self.liste_robot_attente.append(choix)
-                print(self.liste_robot_attente)
+                self.liste_robot_attente[choix] = True
+
                 for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0.8
@@ -175,9 +173,7 @@ class Environnement:
 
             #Si le robot arrete d'attendre car aucun robot n'est venu l'aider
             if arrete == True:
-                print("Le robot arrete d'attendre")
-                print(self.liste_robot_attente)
-                del self.liste_robot_attente[self.liste_robot_attente.index(choix)]
+                self.liste_robot_attente[choix] = False
                 for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
@@ -197,6 +193,7 @@ class Environnement:
             #On deplace eventuellement l'agent suiveur
             if suiveur != -1:
                 if act ==3:
+                    self.listeAgent[suiveur].tenir = 0
                     if placegagent == 0 :
                         del self.liste_collaboration[self.liste_collaboration.index([choix, suiveur])]
                     else :
