@@ -15,6 +15,13 @@ def update_memoire(actual, memoire, appel):
 def prop_Agents(liste, objet):
     f = 0
     f_c = 0
+    if objet != 0:
+        for i in range(len(liste)):
+            if liste[i] == objet:
+                f += 1
+            elif liste[i] != 0:
+                f_c += 1
+    """
     if objet == 1:
         for i in range(len(liste)):
             if liste[i] == objet:
@@ -38,7 +45,7 @@ def prop_Agents(liste, objet):
             if liste[i] == 1:
                 f_c = f_c + 1
             if liste[i] == 2:
-                f_c = f_c + 1
+                f_c = f_c + 1"""
     f = (f + f_c * 0.1) / len(liste)
     return f
 
@@ -48,8 +55,6 @@ class Agent:
         self.id = id
         self.tenir = 0
         self.memoire = []
-        self.pprise = -1
-        self.pdepot = -1
         self.change = 0  # Pris ou déposé
         self.pas = 1
         self.feromone = -1
@@ -60,27 +65,33 @@ class Agent:
     def prob(self, actual, memoire, tenir):
         pprise = -1
         pdepot = -1
+        #f = prop_Agents(memoire, actual)
+        """if actual != 0:
+            if tenir == 0:
+                f = prop_Agents(memoire, actual)
+                pprise = (0.1/(0.1+f))**2
+            return pprise
+        else:
+            if tenir != 0:
+                f = prop_Agents(memoire, actual)
+                pdepot = (f / (0.3 + f)) ** 2
+            return pdepot
+        """
         if actual == 1:
             if tenir == 0:
                 f1 = prop_Agents(memoire, 1)
                 pprise = (0.1 / (0.1 + f1)) ** 2
-                return pprise
-            else:
-                return pprise
+            return pprise
         elif actual == 2:
             if tenir == 0:
                 f2 = prop_Agents(memoire, 2)
                 pprise = (0.1 / (0.1 + f2)) ** 2
-                return pprise
-            else:
-                return pprise
+            return pprise
         elif actual == 3:
             if tenir == 0:
                 f3 = prop_Agents(memoire, 3)
                 pprise = (0.1 / (0.1 + f3)) ** 2
-                return pprise
-            else:
-                return pprise
+            return pprise
         else:  # actual != 0.9 and actual != 0.8 and actual != 0.7:
             if tenir == 0:
                 return pdepot
