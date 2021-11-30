@@ -54,7 +54,7 @@ class Environnement:
             self.env[x][y] = 2
 
         ##Creation Objet C
-        """for i in range(1):
+        for i in range(1):
             vide = False
             x = self.alea()
             y = self.alea()
@@ -63,7 +63,7 @@ class Environnement:
                 y = self.alea()
                 if self.env[x][y] == 0:
                     vide = True
-            self.env[x][y] = 3"""
+            self.env[x][y] = 3
 
         # Creation agent
 
@@ -172,7 +172,7 @@ class Environnement:
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 1
                         ##Question???
-                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 1
+                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 2
             if arrete == True:
                 del self.liste_robot_attente[self.liste_robot_attente.index(choix)]
                 for k in range(len(listePosautour)):
