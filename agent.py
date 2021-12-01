@@ -81,7 +81,7 @@ class Agent:
                 return pprise
             else:
                 return pprise
-        else:  # actual != 0.9 and actual != 0.8 and actual != 0.7:
+        else:
             if tenir == 0:
                 return pdepot
             elif tenir == 1:

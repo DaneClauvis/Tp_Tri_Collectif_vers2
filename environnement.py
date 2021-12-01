@@ -130,7 +130,7 @@ class Environnement:
             suiveur = -1
             placegagent = 0
             for k in range(len(self.liste_collaboration)):
-                if self.liste_collaboration[k][0] == choix :
+                if self.liste_collaboration[k][0] == choix:
                     suiveur = self.liste_collaboration[k][1]
                     placegagent = 0
                 if self.liste_collaboration[k][1] == choix:
@@ -174,10 +174,17 @@ class Environnement:
                         phero = INTENSITE_MAX
                         for i in range (max(k,l)):
                             phero = phero - phero/DISTANCE_DIFFUSION
-                        if self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] == 0:
-                            self.liste_pheromone[pos_agent_x + k][pos_agent_y + l] = phero
+                        if pos_agent_x + k < self.taille-1 and pos_agent_y + k < self.taille-1:
+                            if self.liste_pheromone[k+pos_agent_x][l+pos_agent_y] == 0:
+                                self.liste_pheromone[k+pos_agent_x][l+pos_agent_y] = phero
+                        if pos_agent_x - k > 0 and pos_agent_y - k > 0:
+                            if self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] == 0:
+                                self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] = phero
                         else :
-                            self.liste_pheromone[k][l] = self.liste_pheromone[k][l] + (1-self.liste_pheromone[k][l])*phero
+                            if pos_agent_x + k < self.taille - 1 and pos_agent_y + k < self.taille - 1:
+                                self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] = self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] + (1-self.liste_pheromone[pos_agent_x+k][l+pos_agent_y])*phero
+                            if pos_agent_x - k > 0 and pos_agent_y - k > 0:
+                                self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] = self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] + (1-self.liste_pheromone[pos_agent_x-k][pos_agent_y-l])*phero
 
                 """for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
