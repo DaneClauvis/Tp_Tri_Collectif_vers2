@@ -97,7 +97,7 @@ class Agent:
                 pdepot = (f3 / (0.3 + f3)) ** 2
                 return pdepot
 
-    def perception_action(self, actual, pos, taille_grille, feromoneAutour, pos_accessible, robot):
+    def perception_action(self, actual, pos, feromoneAutour, pos_accessible, robot):
         self.memoire = update_memoire(actual, self.memoire, self.appel)
 
         if self.tenir == 0:
