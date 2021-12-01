@@ -39,7 +39,7 @@ def prop_Agents(liste, objet):
                 f_c = f_c + 1
             if liste[i] == 2:
                 f_c = f_c + 1
-    f = (f + f_c * 0) / len(liste)
+    f = (f) / len(liste)
     return f
 
 
