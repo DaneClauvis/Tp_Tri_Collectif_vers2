@@ -168,7 +168,6 @@ class Environnement:
                 for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0.8
-                        ##Question???
                 self.liste_pheromone[pos_agent_x][pos_agent_y] = 1
 
             #Si le robot arrete d'attendre car aucun robot n'est venu l'aider
