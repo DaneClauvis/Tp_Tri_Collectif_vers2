@@ -174,8 +174,8 @@ class Environnement:
                         phero = INTENSITE_MAX
                         for i in range (max(k,l)):
                             phero = phero - phero/DISTANCE_DIFFUSION
-                        if self.liste_pheromone[k][l] == 0:
-                            self.liste_pheromone[k][l] = phero
+                        if self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] == 0:
+                            self.liste_pheromone[pos_agent_x + k][pos_agent_y + l] = phero
                         else :
                             self.liste_pheromone[k][l] = self.liste_pheromone[k][l] + (1-self.liste_pheromone[k][l])*phero
 
