@@ -11,6 +11,10 @@ from agent import Agent
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.cluster import KMeans
 
+TAUX_EVAPORATION = 0.05
+DISTANCE_DIFFUSION = 2
+DIMINUTION_INTENSITE = 1 / DISTANCE_DIFFUSION
+INTENSITE_MAX =1
 
 class Environnement:
     taille = 50
@@ -147,7 +151,7 @@ class Environnement:
             #L'agent fait sa boucle perception/action
             enAttente, Collab, arrete, newPosition, act = agent.perception_action(self.env[pos_agent_x][pos_agent_y],
                                                                                   self.listePosAgent[choix],
-                                                                                  self.taille, listeFeromoneAutour,
+                                                                                  listeFeromoneAutour,
                                                                                   listePosautour, robot_en_attente)
 
             #Si l'agent rentre en collaboration
@@ -165,10 +169,21 @@ class Environnement:
             if enAttente == True:
                 self.liste_robot_attente[choix] = True
 
-                for k in range(len(listePosautour)):
+                for k in range (DISTANCE_DIFFUSION):
+                    for l in range (DISTANCE_DIFFUSION):
+                        phero = INTENSITE_MAX
+                        for i in range (max(k,l)):
+                            phero = phero - phero/DISTANCE_DIFFUSION
+                        if self.liste_pheromone[k][l] == 0:
+                            self.liste_pheromone[k][l] = phero
+                        else :
+                            self.liste_pheromone[k][l] = self.liste_pheromone[k][l] + (1-self.liste_pheromone[k][l])*phero
+
+                """for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
-                        self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0.8
-                self.liste_pheromone[pos_agent_x][pos_agent_y] = 1
+                        self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = IN
+                        ##Question???
+                self.liste_pheromone[pos_agent_x][pos_agent_y] = 1"""
 
             #Si le robot arrete d'attendre car aucun robot n'est venu l'aider
             if arrete == True:
@@ -201,6 +216,7 @@ class Environnement:
                     self.listePosAgent[suiveur] = newPosition
 
             """if cmpt %500000==0:
+
                 nb_1 = self.selecting_nb_cluster(self.liste_coord(1))
                 nb_2 = self.selecting_nb_cluster(self.liste_coord(2))
                 self.liste_cluster.append(nb_2 + nb_1)
