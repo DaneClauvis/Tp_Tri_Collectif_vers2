@@ -11,10 +11,10 @@ from agent import Agent
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.cluster import KMeans
 
-TAUX_EVAPORATION = 0.05
+TAUX_EVAPORATION = 0.001
 DISTANCE_DIFFUSION = 2
 DIMINUTION_INTENSITE = 1 / DISTANCE_DIFFUSION
-INTENSITE_MAX =1
+INTENSITE_MAX = 1
 
 class Environnement:
     taille = 50
@@ -25,6 +25,7 @@ class Environnement:
     liste_nb_ite = []
     liste_collaboration = []
     liste_robot_attente = []
+    liste_pheromone_diff_zero = []
     liste_pheromone = np.zeros((taille, taille))
     index_agent_aide = -1
 
@@ -58,7 +59,7 @@ class Environnement:
             self.env[x][y] = 2
 
         ##Creation Objet C
-        for i in range(30):
+        for i in range(50):
             vide = False
             x = self.alea()
             y = self.alea()
@@ -126,6 +127,8 @@ class Environnement:
             pos_agent_x = self.listePosAgent[choix][0]
             pos_agent_y = self.listePosAgent[choix][1]
 
+            self.liste_pheromone = self.liste_pheromone * (1-TAUX_EVAPORATION)
+
             #On regarde si ce robot est associé à un autre robot
             suiveur = -1
             placegagent = 0
@@ -167,20 +170,21 @@ class Environnement:
                     # TODO : Cas ou d'autre agents sont autour
             #Si l'agent rentre en attente
             if enAttente == True:
+
                 self.liste_robot_attente[choix] = True
                 phero = INTENSITE_MAX
                 for k in range (DISTANCE_DIFFUSION):
                     for l in range (DISTANCE_DIFFUSION):
                         for i in range (max(k,l)):
                             phero = phero - phero/DISTANCE_DIFFUSION
-                        if pos_agent_x + k < self.taille-1 and pos_agent_y + k < self.taille-1:
+                        if pos_agent_x + k < self.taille-1 and pos_agent_y + l < self.taille-1:
                             if self.liste_pheromone[k+pos_agent_x][l+pos_agent_y] == 0:
                                 self.liste_pheromone[k+pos_agent_x][l+pos_agent_y] = phero
-                        if pos_agent_x - k >= 0 and pos_agent_y - k >= 0:
+                        if pos_agent_x - k >= 0 and pos_agent_y - l >= 0:
                             if self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] == 0:
                                 self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] = phero
                         else :
-                            if pos_agent_x + k < self.taille - 1 and pos_agent_y + k < self.taille - 1:
+                            if pos_agent_x + k < self.taille - 1 and pos_agent_y + l < self.taille - 1:
                                 self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] = self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] + (1-self.liste_pheromone[pos_agent_x+k][l+pos_agent_y])*phero
                             if pos_agent_x - k >= 0 and pos_agent_y - k >= 0:
                                 self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] = self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] + (1-self.liste_pheromone[pos_agent_x-k][pos_agent_y-l])*phero
@@ -194,10 +198,10 @@ class Environnement:
             #Si le robot arrete d'attendre car aucun robot n'est venu l'aider
             if arrete == True:
                 self.liste_robot_attente[choix] = False
-                for k in range(len(listePosautour)):
+                """for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
                         self.liste_pheromone[listePosautour[k][0]][listePosautour[k][1]] = 0
-                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 0
+                        self.liste_pheromone[pos_agent_x][pos_agent_y] = 0"""
             #Si l'agent pose un objet
             if act > 0:
                 self.env[pos_agent_x][pos_agent_y] = act
@@ -227,7 +231,7 @@ class Environnement:
                 nb_2 = self.selecting_nb_cluster(self.liste_coord(2))
                 self.liste_cluster.append(nb_2 + nb_1)
                 self.liste_nb_ite.append(cmpt)"""
-
+            print(cmpt)
             if cmpt == 1000000 or cmpt == 2000000 or cmpt == 3000000 or cmpt % 5000000 == 0:
 
                 app2 = QApplication.instance()

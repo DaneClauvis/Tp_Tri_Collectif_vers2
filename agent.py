@@ -39,7 +39,7 @@ def prop_Agents(liste, objet):
                 f_c = f_c + 1
             if liste[i] == 2:
                 f_c = f_c + 1
-    f = (f) / len(liste)
+    f = f / len(liste)
     return f
 
 
@@ -105,15 +105,19 @@ class Agent:
             if self.appel > 0 and self.appel < 3:
                 self.appel = self.appel + 1
                 # print("JATEND")
-                return False, False, False, pos, -1  # En attente, Collaboration acceptée ou non, position, si on prend ou pas
+                return True, False, False, pos, -1  # En attente, Collaboration acceptée ou non, position, si on prend ou pas
             if self.appel >= 3:
                 self.appel = 0
                 return False, False, True, pos_accessible[randint(0, len(pos_accessible) - 1)], -1
 
             # Si la case sur laquelle on se trouve vaut 3, on appelle à l'aide si aucun autre robot n'appelle à l'aide
             elif actual == 3 and robot == False:
+                pprise = self.prob(actual, self.memoire, self.tenir)
+                #r = random.uniform(0, 1)
+                #if r < pprise:
                 self.appel = 1
                 return True, False, False, pos, -1
+
 
             # Si un robot appelle déjà à l'aide sur la case, il est sur le point de fusionner
             elif robot == True:
@@ -122,13 +126,14 @@ class Agent:
 
             # On prend un objet avec une probabilité pprise
             prend = -1
-            if actual != 0:
-                pprise = self.prob(actual, self.memoire, self.tenir)
-                r = random.uniform(0, 1)
+            if actual != 3 :
+                if actual != 0:
+                    pprise = self.prob(actual, self.memoire, self.tenir)
+                    r = random.uniform(0, 1)
 
-                if r < pprise:
-                    self.tenir = actual
-                    prend = -2
+                    if r < pprise:
+                        self.tenir = actual
+                        prend = -2
 
             # Sinon on se déplace vers la phéromone la plus importante
 
@@ -141,11 +146,12 @@ class Agent:
                     if feromoneAutour[k] == pheromone_max:
                         liste.append(k)
                 del litse_pheromone[litse_pheromone.index(pheromone_max)]
+
                 r = random.uniform(0, 1)
-                if r < pheromone_max:
-                    ra = randint(0, len(liste) - 1)
+                if r < pheromone_max :
+                    ra = randint(0, len(liste)-1)
                     return False, False, False, pos_accessible[liste[ra]], prend
-                if len(litse_pheromone) !=0 :
+                if len(litse_pheromone) !=0:
                     pheromone_max = max(litse_pheromone)
                 else :
                     pheromone_max = 0
