@@ -180,14 +180,24 @@ class Environnement:
                         if pos_agent_x + k < self.taille-1 and pos_agent_y + l < self.taille-1:
                             if self.liste_pheromone[k+pos_agent_x][l+pos_agent_y] == 0:
                                 self.liste_pheromone[k+pos_agent_x][l+pos_agent_y] = phero
+                        if pos_agent_x - k >=0  and pos_agent_y + l < self.taille - 1:
+                            if self.liste_pheromone[pos_agent_x - k][pos_agent_y+l] == 0:
+                                self.liste_pheromone[pos_agent_x-k][pos_agent_y+l] = phero
+                        if pos_agent_x + k < self.taille-1 and pos_agent_y - l >=0:
+                            if self.liste_pheromone[pos_agent_x+k][pos_agent_y-l] == 0:
+                                self.liste_pheromone[pos_agent_x+k][pos_agent_y-l] = phero
                         if pos_agent_x - k >= 0 and pos_agent_y - l >= 0:
                             if self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] == 0:
                                 self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] = phero
                         else :
                             if pos_agent_x + k < self.taille - 1 and pos_agent_y + l < self.taille - 1:
                                 self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] = self.liste_pheromone[pos_agent_x+k][pos_agent_y+l] + (1-self.liste_pheromone[pos_agent_x+k][l+pos_agent_y])*phero
-                            if pos_agent_x - k >= 0 and pos_agent_y - k >= 0:
+                            if pos_agent_x - k >= 0 and pos_agent_y - l >= 0:
                                 self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] = self.liste_pheromone[pos_agent_x-k][pos_agent_y-l] + (1-self.liste_pheromone[pos_agent_x-k][pos_agent_y-l])*phero
+                            if pos_agent_x + k < self.taille-1  and pos_agent_y - l >= 0:
+                                self.liste_pheromone[pos_agent_x + k][pos_agent_y - l] = self.liste_pheromone[pos_agent_x + k][pos_agent_y - l] + (1 - self.liste_pheromone[pos_agent_x + k][pos_agent_y - l]) * phero
+                            if pos_agent_x - k >= 0 and pos_agent_y + l < self.taille -1:
+                                self.liste_pheromone[pos_agent_x - k][pos_agent_y + l] = self.liste_pheromone[pos_agent_x - k][pos_agent_y + l] + (1 - self.liste_pheromone[pos_agent_x - k][pos_agent_y + l]) * phero
 
                 """for k in range(len(listePosautour)):
                     if listeFeromoneAutour[k] == 0:
