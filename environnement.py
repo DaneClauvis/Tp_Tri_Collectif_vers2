@@ -228,7 +228,7 @@ class Environnement:
             if suiveur != -1:
                 if act ==3:
                     self.listeAgent[suiveur].tenir = 0
-                    if placegagent == 0 :
+                    if placegagent == 0:
                         del self.liste_collaboration[self.liste_collaboration.index([choix, suiveur])]
                     else :
                         del self.liste_collaboration[self.liste_collaboration.index([suiveur, choix])]
@@ -242,7 +242,7 @@ class Environnement:
                 nb_3 = self.selecting_nb_cluster(self.liste_coord(3))
                 self.liste_cluster.append(nb_2 + nb_1 +nb_3)
                 self.liste_nb_ite.append(cmpt)
-            print(cmpt)
+            #print(cmpt)
             if cmpt == 1000000 or cmpt == 2000000 or cmpt == 3000000 or cmpt % 5000000 == 0:
 
                 app2 = QApplication.instance()

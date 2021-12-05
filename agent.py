@@ -14,11 +14,11 @@ def update_memoire(actual, memoire, appel):
 def prop_Agents(liste, objet):
     f = 0
     f_c = 0
-    if objet == 1:
+    if objet != 0:
         for i in range(len(liste)):
             if liste[i] == objet:
                 f = f + 1
-            if liste[i] == 2:
+            """if liste[i] != objet and liste[i] != 0:
                 f_c = f_c + 1
             if liste[i] == 3:
                 f_c = f_c + 1
@@ -37,7 +37,7 @@ def prop_Agents(liste, objet):
             if liste[i] == 1:
                 f_c = f_c + 1
             if liste[i] == 2:
-                f_c = f_c + 1
+                f_c = f_c + 1"""
     f = f / len(liste)
     return f
 
