@@ -241,7 +241,7 @@ class Environnement:
                 nb_2 = self.selecting_nb_cluster(self.liste_coord(2))
                 self.liste_cluster.append(nb_2 + nb_1)
                 self.liste_nb_ite.append(cmpt)"""
-            print(cmpt)
+
             if cmpt == 1000000 or cmpt == 2000000 or cmpt == 3000000 or cmpt % 5000000 == 0:
 
                 app2 = QApplication.instance()
