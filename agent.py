@@ -7,8 +7,7 @@ def update_memoire(actual, memoire, appel):
         del memoire[0]
     if appel == 0:
         memoire.append(actual)
-    else:
-        memoire.append(0)
+
     return memoire
 
 
@@ -102,7 +101,7 @@ class Agent:
 
         if self.tenir == 0:
             # Si il appel à l'aide, il continue si ça fait moins de 10 tours
-            if self.appel > 0 and self.appel < 3:
+            if self.appel > 0 and self.appel < 10:
                 self.appel = self.appel + 1
                 # print("JATEND")
                 return True, False, False, pos, -1  # En attente, Collaboration acceptée ou non, position, si on prend ou pas
@@ -113,10 +112,10 @@ class Agent:
             # Si la case sur laquelle on se trouve vaut 3, on appelle à l'aide si aucun autre robot n'appelle à l'aide
             elif actual == 3 and robot == False:
                 pprise = self.prob(actual, self.memoire, self.tenir)
-                #r = random.uniform(0, 1)
-                #if r < pprise:
-                self.appel = 1
-                return True, False, False, pos, -1
+                r = random.uniform(0, 1)
+                if r < pprise:
+                    self.appel = 1
+                    return True, False, False, pos, -1
 
 
             # Si un robot appelle déjà à l'aide sur la case, il est sur le point de fusionner
