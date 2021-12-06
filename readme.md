@@ -6,7 +6,7 @@
 Ce projet a été réalisé dans le cadre d'un projet de système multi-agent pour le master 2 Intelligence Artificielle à l'université Lyon 1.
 Des agents réactifs trient des objets A, B et C sur une grille de taille NxM
 
- 
+
 Démarrage
 ---
 ---
